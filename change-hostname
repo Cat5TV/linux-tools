@@ -1,4 +1,7 @@
 #!/bin/bash
+# Change hostname on Debian-based Linux distros
+# By Robbie Ferguson // baldnerd.com
+
 hn=$(/bin/hostname)
 echo Current Hostname: $hn
 read -p "New Hostname: " hn_new
