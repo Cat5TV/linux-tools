@@ -1,0 +1,11 @@
+#!/bin/bash
+hn=$(/bin/hostname)
+echo Current Hostname: $hn
+read -p "New Hostname: " hn_new
+
+printf "Changing Hostname... "
+/bin/sed -i -- 's/'"$hn"'/'"$hn_new"'/g' /etc/hosts
+/bin/sed -i -- 's/'"$hn"'/'"$hn_new"'/g' /etc/hostname
+hostnamectl set-hostname $hn_new
+echo Done.
+echo Change will take effect at next reboot.
