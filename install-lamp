@@ -1,6 +1,14 @@
 #!/bin/bash
 echo "Installing LAMP stack..."
 
+# Change hostname on Debian-based Linux distros
+# By Robbie Ferguson // baldnerd.com
+
+if [[ $EUID -ne 0 ]]; then
+  echo "ERROR: This script must be run as root" 2>&1
+  exit 1
+fi
+
 # Update apt repositories
 sudo apt update > /dev/null 2>&1
 
