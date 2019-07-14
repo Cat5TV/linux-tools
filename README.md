@@ -5,3 +5,6 @@ Miscellaneous Linux Scripts
 
 Change your Linux hostname easily. Only for Debian-based distros.
 
+## install-lamp
+
+Install a LAMP stack on Debian Buster.
