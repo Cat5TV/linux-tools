@@ -18,9 +18,9 @@ yes | sudo apt install apache2 php7.3 php7.3-cli php7.3-common php7.3-curl php7.
 # Add a root password to MySQL
 sudo mysql_secure_installation
 
-# Enable PHP 7.3
-sudo a2dismod mpm_event
-sudo a2enmod php7.3
-systemctl restart apache2
+# Enable PHP 7.3 (No need, gets activated automatically with MPM)
+#sudo a2dismod mpm_event
+#sudo a2enmod php7.3
+#systemctl restart apache2
 
 echo "Done."
