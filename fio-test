@@ -1,0 +1,120 @@
+#!/bin/bash
+if [[ $EUID -ne 0 ]]; then
+  echo "ERROR: This script must be run as root" 2>&1
+  exit 1
+fi
+
+drive=$1
+if [[ $drive == "" ]]; then
+  echo "Usage: $0 /dev/sdX"
+  echo "       where sdX is your actual drive (not partition)."
+  echo "       Test is destructive. DO NOT run on production drives."
+  echo "       Drive must not be mounted."
+  exit 0
+fi
+
+# A simple but hopefully effective test to prevent accidental data corruption
+mountcheck=$(mount | grep $drive)
+if [[ $mountcheck != "" ]]; then
+  echo "This drive is mounted and cannot be tested."
+  echo "Did you know, this is a destructive test."
+  echo "If you run the test on this drive, it will lose data."
+  exit 1
+fi
+
+echo ""
+echo "WARNING: Data on $drive will be destroyed."
+echo ""
+read -r -p "Are you sure? [y/N] " response
+if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]
+then
+
+tmpdir=`mktemp -d -p /tmp/`
+
+if [ $(dpkg-query -W -f='${Status}' fio 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
+  printf "Installing fio... "
+  apt update > /dev/null 2>&1
+  apt-get install -y fio > /dev/null 2>&1
+  if [ $(dpkg-query -W -f='${Status}' fio 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
+    echo "Failed."
+    exit 1
+  else
+    echo "Done."
+  fi
+fi
+
+printf "Generating tests for $drive... "
+
+# rnd-read
+echo "[rnd-read]
+ioengine=libaio
+direct=1
+size=100%
+bs=4k
+rw=randread
+numjobs=2
+iodepth=16
+runtime=600
+time_based
+norandommap
+randrepeat=0
+group_reporting
+filename=$drive" > $tmpdir/rnd-read.ini
+
+# rnd-write
+echo "[rnd-write]
+ioengine=libaio
+direct=1
+size=100%
+bs=4k
+rw=randwrite
+numjobs=2
+iodepth=16
+runtime=600
+time_based
+norandommap
+randrepeat=0
+group_reporting
+filename=$drive" > $tmpdir/rnd-write.ini
+
+# seq-read
+echo "[seq-read]
+ioengine=libaio
+direct=1
+size=100%
+bs=128k
+rw=read
+numjobs=1
+iodepth=32
+runtime=600
+time_based
+filename=$drive" > $tmpdir/seq-read.ini
+
+# seq-write
+echo "[seq-write]
+ioengine=libaio
+direct=1
+size=100%
+bs=128k
+rw=write
+numjobs=1
+iodepth=32
+runtime=600
+time_based
+filename=$drive" > $tmpdir/seq-write.ini
+
+echo "Done."
+echo ""
+echo "Running tests..."
+
+fio $tmpdir/rnd-read.ini
+fio $tmpdir/rnd-write.ini
+fio $tmpdir/seq-read.ini
+fio $tmpdir/seq-write.ini
+
+rm -rf $tmpdir
+
+else
+  echo "Aborted."
+  exit 0
+fi
