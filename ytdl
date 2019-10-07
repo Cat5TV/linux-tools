@@ -1,9 +1,19 @@
 #!/bin/bash
+echo ""
 
 command=$1
 url=$2
 
-if [[ $command == 'install' ]]; then
+if [[ -e /usr/local/bin/youtube-dl ]]; then
+  version=$(/usr/local/bin/youtube-dl --version)
+fi
+echo "youtube-dl front-end by Robbie Ferguson // baldnerd.com"
+if [[ $version != '' ]]; then
+  echo "Using youtube-dl version $version"
+fi
+echo ""
+
+if [[ $version == '' ]] || [[ $command == 'install' ]]; then
   # Install youtube-dl
   if [[ -e /usr/local/bin/youtube-dl ]]; then
     printf "Updating youtube-dl..."
@@ -24,6 +34,8 @@ if [[ $url == '' ]]; then
   echo "  install - Install or update youtube-dl"
   echo "  mp4 - Download the MP4 video file"
   echo "  mp3 - Download the MP3 audio file"
+  echo ""
+  echo "URL can be a video or a playlist."
   echo ""
 fi
 
