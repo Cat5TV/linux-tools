@@ -24,3 +24,17 @@ Install ytdl:
 sudo wget https://raw.githubusercontent.com/Cat5TV/linux-tools/master/ytdl -O /usr/local/bin/ytdl
 sudo chmod a+rx /usr/local/bin/ytdl
 ```
+
+## wallpaper
+
+Rotate desktop wallpaper on a timer. Works on Linux Mint 19, and probably others.
+
+Open the shell script and modify the srcfolder, destfile and seconds variables.
+
+Run via cron like this:
+
+```
+@reboot /path/to/wallpaper
+```
+
+It will continually crawl through the srcfolder for any file with the .jpg extension and overwrite destfile each time.

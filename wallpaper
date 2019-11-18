@@ -1,0 +1,18 @@
+#!/bin/bash
+# Only supports .jpg files (probably even case sensitive... look, I whipped this up in 5 minutes! LOL)
+
+# User Settings:
+srcfolder=/home/robbie/Pictures/Wallpaper
+destfile=/home/robbie/wallpaper.jpg
+seconds=60
+
+# Don't touch this stuff
+cd $srcfolder
+while :
+  do
+    for filename in *.jpg; do
+        cp -f "$filename" "$destfile"
+        echo $filename
+        sleep $seconds
+    done
+  done
