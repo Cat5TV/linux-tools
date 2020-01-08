@@ -38,3 +38,13 @@ Run via cron like this:
 ```
 
 It will continually crawl through the srcfolder for any file with the .jpg extension and overwrite destfile each time.
+
+## wifi-check
+
+This script will read wifi-check.cfg in the same directory, or a cfg file designated by --cfg=
+
+The cfg file should be a different hostname, IP address or domain name per line, plain text. Once a config is found, each host is checked via a simple ping. Modify the result of the host being up or down near the end of the script.
+
+I called it wifi-check due to its original purpose: I have a static IP address (DHCP Reservation) assigned to each of my staff's smartphones when connected to my wifi. Then, I run this script every 1 minute via cron. If a staff member is connected to WiFi, it is logged that they are on location. Once they are disconnected from our WiFi (presumably out of distance), it is logged that they are gone.
+
+Example cfg file: [wifi-check.cfg](wifi-check.cfg)

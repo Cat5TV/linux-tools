@@ -1,0 +1,67 @@
+#!/usr/bin/env php
+<?php
+
+// Based on https://baldnerd.com/walk-in-wifi-responder/
+
+/*
+
+  Binary result of ping for multiple hosts
+  By Robbie Ferguson // The Bald Nerd
+  baldnerd.com
+
+  This script will read wifi-check.cfg in the same directory, or a cfg file designated by --cfg=
+  The cfg file should be a different hostname, IP address or domain name per line, plain text.
+  Once a config is found, each host is checked via a simple ping.
+  Modify the result of the host being up or down near the end of the script.
+
+  I have a static IP address assigned to my staff's smartphones when connected to my wifi.
+  Then, I run this script every 1 minute via cron.
+  If a staff member is connected to WiFi, it is logged that they are on location.
+  Once they are disconnected from our WiFi (presumably out of distance), it is logged that they are gone.
+
+*/
+
+  parse_str(implode('&', array_slice($argv, 1)), $_GET);
+  $path = pathinfo($argv[0]);
+  $realpath = trim(shell_exec('pwd ' . $path['dirname']));
+
+  if (isset($_GET['--cfg'])) {
+    $cfg = filter_var($_GET['--cfg'], FILTER_SANITIZE_STRING);
+  } else {
+    $cfg = $realpath . '/wifi-check.cfg';
+  }
+
+  if (file_exists($cfg)) {
+    $hosts = file($cfg);
+    if (is_array($hosts)) {
+      foreach ($hosts as $host) {
+        check($host);
+      }
+    }
+  } else {
+    echo 'Config could not be found.' . PHP_EOL;
+    echo 'Create this file with one hostname / IP address / domain name per line.' . PHP_EOL;
+    echo 'Call the script with ' . $argv[0] . ' --cfg=/path/to/wifi-check.cfg' . PHP_EOL;
+    echo 'Or place it in the "' . $realpath . '" folder.' . PHP_EOL;
+    exit();
+  }
+
+  function check($host) {
+    $host = trim($host);
+    $ping = exec('ping ' . $host . ' -a -q -c 1');
+    $result = array();
+    // rtt min/avg/max/mdev = 108.428/108.428/108.428/0.000
+    if (strlen($ping) > 0) {
+      $tmp=@explode('=', $ping);
+      $result=@explode('/', trim($tmp[1]));
+    }
+    if (count($result) > 0) {
+      // Now we know the device is connected; do something
+      echo $host . '=1' . PHP_EOL;
+    } else {
+      // Device is not connected.
+      echo $host . '=0' . PHP_EOL;
+    }
+  }
+
+?>
