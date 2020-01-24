@@ -14,14 +14,20 @@ fi
 echo ""
 
 if [[ $version == '' ]] || [[ $command == 'install' ]]; then
+
+  if [[ $EUID -ne 0 ]]; then
+    echo "ERROR: Install can only be run as super user" 2>&1
+    exit 1
+  fi
+
   # Install youtube-dl
   if [[ -e /usr/local/bin/youtube-dl ]]; then
     printf "Updating youtube-dl..."
   else
     printf "Installing youtube-dl..."
   fi
-  sudo wget https://yt-dl.org/downloads/latest/youtube-dl -q -O /usr/local/bin/youtube-dl
-  sudo chmod a+rx /usr/local/bin/youtube-dl
+  wget https://yt-dl.org/downloads/latest/youtube-dl -q -O /usr/local/bin/youtube-dl
+  chmod a+rx /usr/local/bin/youtube-dl
   version=$(/usr/local/bin/youtube-dl --version)
   echo "Done. Version $version installed."
   exit
@@ -34,6 +40,7 @@ if [[ $url == '' ]]; then
   echo "  install - Install or update youtube-dl"
   echo "  mp4 - Download the MP4 video file"
   echo "  mp3 - Download the MP3 audio file"
+  echo "  captions - Download auto-generated captions"
   echo ""
   echo "URL can be a video or a playlist."
   echo ""
@@ -49,5 +56,11 @@ fi
 if [[ $command == 'mp3' ]]; then
   # Download MP3 audio
   youtube-dl --extract-audio --audio-format mp3 $url
+fi
+
+
+if [[ $command == 'captions' ]]; then
+  # Download captions
+  youtube-dl --write-auto-sub --all-subs --skip-download $url
 fi
 
