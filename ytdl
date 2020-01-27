@@ -50,17 +50,17 @@ if [[ $command == 'mp4' ]]; then
   # Download video
   # Will grab the best version in MP4 format
   # Prevents ending up with webm files, etc.
-  /usr/local/bin/youtube-dl -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' $url
+  /usr/local/bin/youtube-dl --sleep-interval 60 -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' $url
 fi
 
 if [[ $command == 'mp3' ]]; then
   # Download MP3 audio
-  youtube-dl --extract-audio --audio-format mp3 $url
+  youtube-dl --sleep-interval 60 --extract-audio --audio-format mp3 $url
 fi
 
 
 if [[ $command == 'captions' ]]; then
   # Download captions
-  youtube-dl --write-auto-sub --all-subs --skip-download $url
+  youtube-dl --sleep-interval 60 --write-auto-sub --all-subs --skip-download $url
 fi
 
