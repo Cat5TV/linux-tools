@@ -6,6 +6,8 @@ url=$2
 
 if [[ -e /usr/local/bin/youtube-dl ]]; then
   version=$(/usr/local/bin/youtube-dl --version)
+elif [[ -e /usr/bin/youtube-dl ]]; then
+  version=$(/usr/bin/youtube-dl --version)
 fi
 echo "youtube-dl front-end by Robbie Ferguson // baldnerd.com"
 if [[ $version != '' ]]; then
