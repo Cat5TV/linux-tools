@@ -1,0 +1,135 @@
+#!/bin/bash
+
+# Requirements:
+#
+# imagemagick
+
+targetsize=$1
+file=$2
+echo ""
+echo "Resize to Size v1.0 by Robbie Ferguson"
+echo ""
+echo "This tool scales and compresses an image to a target filesize,"
+echo "creating the best size/quality image possible within that limitation."
+echo ""
+
+if [[ $targetsize == '' ]] || [[ $file == '' ]]; then
+  echo "Usage:   $0 SIZE_IN_MB FILENAME"
+  echo ""
+  echo "Example: $0 2 sample.jpg"
+  echo "Will scale and compress sample.jpg to 2 MB"
+  echo ""
+  exit
+fi
+
+if [[ ! -e $file ]]; then
+  echo "$file does not exist."
+  echo ""
+  exit
+fi
+
+save () {
+  destfile=${file%.*}_resized.jpg
+  mv $newfile $destfile
+  echo ""
+  echo "File saved to $destfile"
+  echo ""
+}
+filesize () {
+  filesize=$(wc -c $1 | awk '{print $1}')
+}
+tmpdir=`mktemp -d -p /tmp/`
+
+targetsize=$(( $targetsize * 1000000 ))
+sourcesize=$(wc -c $file | awk '{print $1}')
+basequality=$(identify -verbose $file | grep 'Quality' | awk '{print $2}') # No point in using a higher quality setting than the source
+if [[ $basequality == '' ]] || (( $basequality < 1 )); then
+  basequality=98 # The starting quality: Always start high and work our way down
+fi
+
+if (( $targetsize > $sourcesize )); then
+  echo "$file is $(( $sourcesize / 1000000 )) MB. Not resizing to $(( $targetsize / 1000000 )) MB."
+fi
+
+newfile="$tmpdir/source.jpg"
+filesize $file
+
+# First attempt: try to decrease quality incrementally to 75% quality without re-scaling
+printf "Attempting a gradual increase in compression..."
+quality=$basequality
+until [ $filesize -lt $targetsize ]
+do
+  cp $file $newfile
+  mogrify -quality $quality $newfile -format jpg
+  filesize $newfile
+  quality=$(( $quality-1 ))
+  if (( $quality < 70 )); then
+    echo "Cannot be achieved with compression alone."
+    break
+  fi
+  printf "."
+done
+if (( $filesize < $targetsize )); then
+  echo ""
+  echo "Achieved target size by setting the JPG quality to ${quality}%."
+  save
+  exit
+fi
+
+# Second attempt: we'll slowly resize the image while testing high quality settings
+printf "Gradually reducing the scale of the image while also adjusting compression..."
+quality=$basequality
+scale=99 # Starting percentage of scale
+until [ $filesize -lt $targetsize ]
+do
+  cp $file $newfile
+  mogrify -resize ${scale}% -quality $quality $newfile -format jpg
+  filesize $newfile
+  quality=$(( $quality-1 ))
+  if (( $quality < 70 )); then
+    scale=$(( $scale-1 ))
+    quality=$basequality
+  fi
+  if (( $scale < 30 )); then
+    echo "Failed."
+    break
+  fi
+  printf "."
+done
+if (( $filesize < $targetsize )); then
+  echo ""
+  echo "Achieved target size by scaling the image to ${scale}% of its original size and setting JPG compression to ${quality}%."
+  save
+  exit
+fi
+
+# Third attempt: get extremely aggressive
+printf "Attempting the same but being more aggressive with the compression..."
+quality=$basequality
+scale=99 # Starting percentage of scale
+until [ $filesize -lt $targetsize ]
+do
+  cp $file $newfile
+  mogrify -resize ${scale}% -quality $quality $newfile -format jpg
+  filesize $newfile
+  quality=$(( $quality-1 ))
+  if (( $quality < 30 )); then
+    scale=$(( $scale-1 ))
+    quality=$basequality
+  fi
+  if (( $scale < 30 )); then
+    echo "Failed."
+    break
+  fi
+  printf "."
+done
+if (( $filesize < $targetsize )); then
+  echo ""
+  echo "Achieved target size by scaling the image to ${scale}% of its original size and setting JPG compression to ${quality}%."
+  save
+  exit
+fi
+
+echo ""
+echo "Sorry, I couldn't get your file down to that size."
+echo ""
