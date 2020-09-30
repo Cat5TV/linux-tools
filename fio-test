@@ -103,14 +103,42 @@ runtime=600
 time_based
 filename=$drive" > $tmpdir/seq-write.ini
 
+echo "[rnd-pc]
+ioengine=libaio
+direct=1
+size=100%
+bs=4k
+rw=randwrite
+numjobs=2
+iodepth=16
+loops=4
+norandommap
+randrepeat=0
+group_reporting
+filename=$drive" > $tmpdir/rnd-pc.ini
+
+echo "[seq-pc]
+ioengine=libaio
+direct=1
+size=100%
+bs=128k
+rw=write
+numjobs=1
+iodepth=32
+loops=2
+filename=$drive" > $tmpdir/seq-pc.ini
+
 echo "Done."
 echo ""
 echo "Running tests..."
 
-fio $tmpdir/rnd-read.ini
-fio $tmpdir/rnd-write.ini
+# Run the tests in order recommended by Matt (FIO Specialist) via Mark Noland, Field Application Engineer at Kingston Digital Inc.
+fio $tmpdir/seq-pc.ini
 fio $tmpdir/seq-read.ini
 fio $tmpdir/seq-write.ini
+fio $tmpdir/rnd-pc.ini
+fio $tmpdir/rnd-read.ini
+fio $tmpdir/rnd-write.ini
 
 rm -rf $tmpdir
 
