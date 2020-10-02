@@ -52,8 +52,8 @@ direct=1
 size=100%
 bs=4k
 rw=randread
-numjobs=2
-iodepth=16
+numjobs=4
+iodepth=32
 runtime=600
 time_based
 norandommap
@@ -68,8 +68,8 @@ direct=1
 size=100%
 bs=4k
 rw=randwrite
-numjobs=2
-iodepth=16
+numjobs=4
+iodepth=32
 runtime=600
 time_based
 norandommap
@@ -85,7 +85,7 @@ size=100%
 bs=128k
 rw=read
 numjobs=1
-iodepth=32
+iodepth=128
 runtime=600
 time_based
 filename=$drive" > $tmpdir/seq-read.ini
@@ -98,7 +98,7 @@ size=100%
 bs=128k
 rw=write
 numjobs=1
-iodepth=32
+iodepth=128
 runtime=600
 time_based
 filename=$drive" > $tmpdir/seq-write.ini
@@ -109,8 +109,8 @@ direct=1
 size=100%
 bs=4k
 rw=randwrite
-numjobs=2
-iodepth=16
+numjobs=4
+iodepth=32
 loops=4
 norandommap
 randrepeat=0
@@ -124,7 +124,7 @@ size=100%
 bs=128k
 rw=write
 numjobs=1
-iodepth=32
+iodepth=128
 loops=2
 filename=$drive" > $tmpdir/seq-pc.ini
 
