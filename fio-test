@@ -132,13 +132,26 @@ echo "Done."
 echo ""
 echo "Running tests..."
 
+start=`date +%s`
+
+datestamp=$(date)
+echo "$datestamp - fio-test on $drive" >> /var/log/fio-test.log
+
 # Run the tests in order recommended by Matt (FIO Specialist) via Mark Noland, Field Application Engineer at Kingston Digital Inc.
-fio $tmpdir/seq-pc.ini
-fio $tmpdir/seq-read.ini
-fio $tmpdir/seq-write.ini
-fio $tmpdir/rnd-pc.ini
-fio $tmpdir/rnd-read.ini
-fio $tmpdir/rnd-write.ini
+fio $tmpdir/seq-pc.ini >> /var/log/fio-test.log
+fio $tmpdir/seq-read.ini >> /var/log/fio-test.log
+fio $tmpdir/seq-write.ini >> /var/log/fio-test.log
+fio $tmpdir/rnd-pc.ini >> /var/log/fio-test.log
+fio $tmpdir/rnd-read.ini >> /var/log/fio-test.log
+fio $tmpdir/rnd-write.ini >> /var/log/fio-test.log
+
+echo "Finished." >> /var/log/fio-test.log
+
+end=`date +%s`
+runtime=$((end-start))
+printf 'Test took %dh %dm %ds to run.\n' $(($runtime/3600)) $(($runtime%3600/60)) $(($runtime%60)) >> /var/log/fio-test.log
+
+echo "Log has been saved to /var/log/fio-test.log"
 
 rm -rf $tmpdir
 
