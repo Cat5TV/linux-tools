@@ -1,4 +1,8 @@
 #!/bin/bash
+# This FIO drive benchmark script written by Robbie Ferguson for Category5 TV Network.
+# With lots of fantastic input and advice from the folks at Kingston Technology;
+# Special thanks to David Leong, Mark Noland, Matthew Eaton and Cameron Crandall.
+
 if [[ $EUID -ne 0 ]]; then
   echo "ERROR: This script must be run as root" 2>&1
   exit 1
@@ -137,7 +141,7 @@ start=`date +%s`
 datestamp=$(date)
 echo "$datestamp - fio-test on $drive" >> /var/log/fio-test.log
 
-# Run the tests in order recommended by Matt (FIO Specialist) via Mark Noland, Field Application Engineer at Kingston Digital Inc.
+# Run the tests in order recommended by Matt Eaton (FIO Specialist) via Mark Noland, Field Application Engineer at Kingston Digital Inc.
 fio $tmpdir/seq-pc.ini >> /var/log/fio-test.log
 fio $tmpdir/seq-read.ini >> /var/log/fio-test.log
 fio $tmpdir/seq-write.ini >> /var/log/fio-test.log
