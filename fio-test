@@ -3,6 +3,10 @@
 # With lots of fantastic input and advice from the folks at Kingston Technology;
 # Special thanks to David Leong, Mark Noland, Matthew Eaton and Cameron Crandall.
 
+# Currently, this script is optimized for a 4-drive array. You will need to adjust
+# values for numjobs and iodepth if you will be running this on a single drive,
+# or anything other than a 4-drive array.
+
 if [[ $EUID -ne 0 ]]; then
   echo "ERROR: This script must be run as root" 2>&1
   exit 1
