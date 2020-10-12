@@ -51,6 +51,13 @@ if [ $(dpkg-query -W -f='${Status}' fio 2>/dev/null | grep -c "ok installed") -e
   fi
 fi
 
+testEnd() {
+  end=`date +%s`
+  runtime=$((end-testStart))
+  printf 'Test took: %dh %dm %ds to run.\n' $(($runtime/3600)) $(($runtime%3600/60)) $(($runtime%60))
+  printf 'Test took: %dh %dm %ds to run.\n' $(($runtime/3600)) $(($runtime%3600/60)) $(($runtime%60)) >> /var/log/fio-test.log
+}
+
 printf "Generating tests for $drive... "
 
 # rnd-read
@@ -114,7 +121,7 @@ filename=$drive" > $tmpdir/seq-write.ini
 echo "[rnd-pc]
 ioengine=libaio
 direct=1
-size=100%
+size=1G
 bs=4k
 rw=randwrite
 numjobs=4
@@ -143,21 +150,53 @@ echo "Running tests..."
 start=`date +%s`
 
 datestamp=$(date)
+echo "-------------------------------" >> /var/log/fio-test.log
 echo "$datestamp - fio-test on $drive" >> /var/log/fio-test.log
 
 # Run the tests in order recommended by Matt Eaton (FIO Specialist) via Mark Noland, Field Application Engineer at Kingston Digital Inc.
+
+echo "Running seq-pc..."
+echo "Running seq-pc..." >> /var/log/fio-test.log
+testStart=`date +%s`
 fio $tmpdir/seq-pc.ini >> /var/log/fio-test.log
+testEnd
+
+echo "Running seq-read..."
+echo "Running seq-read..." >> /var/log/fio-test.log
+testStart=`date +%s`
 fio $tmpdir/seq-read.ini >> /var/log/fio-test.log
+testEnd
+
+echo "Running seq-write..."
+echo "Running seq-write..." >> /var/log/fio-test.log
+testStart=`date +%s`
 fio $tmpdir/seq-write.ini >> /var/log/fio-test.log
+testEnd
+
+echo "Running rnd-pc..."
+echo "Running rnd-pc..." >> /var/log/fio-test.log
+testStart=`date +%s`
 fio $tmpdir/rnd-pc.ini >> /var/log/fio-test.log
+testEnd
+
+echo "Running rnd-read..."
+echo "Running rnd-read..." >> /var/log/fio-test.log
+testStart=`date +%s`
 fio $tmpdir/rnd-read.ini >> /var/log/fio-test.log
+testEnd
+
+echo "Running rnd-write..."
+echo "Running rnd-write..." >> /var/log/fio-test.log
+testStart=`date +%s`
 fio $tmpdir/rnd-write.ini >> /var/log/fio-test.log
+testEnd
 
+echo "Finished."
 echo "Finished." >> /var/log/fio-test.log
-
 end=`date +%s`
 runtime=$((end-start))
-printf 'Test took %dh %dm %ds to run.\n' $(($runtime/3600)) $(($runtime%3600/60)) $(($runtime%60)) >> /var/log/fio-test.log
+printf 'Total time: %dh %dm %ds to run.\n' $(($runtime/3600)) $(($runtime%3600/60)) $(($runtime%60))
+printf 'Total time: %dh %dm %ds to run.\n' $(($runtime/3600)) $(($runtime%3600/60)) $(($runtime%60)) >> /var/log/fio-test.log
 
 echo "Log has been saved to /var/log/fio-test.log"
 
