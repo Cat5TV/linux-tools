@@ -67,4 +67,11 @@ Example: `./resize-to-size 2 sample.jpg` Will scale and compress sample.jpg to 2
 
 ## surveillance_converter
 
-A bash script I wrote to take AVI files from our surveillance DVR, fix the pixel aspect ratio (2:1) to create 16:9 H.265 A/V files quickly, ready for viewing or pulling into DaVinci Resolve. Just run it in the same folder as a dump of AVI files from the DVR.
+Our DVR is a JOOAN JA-4208(X) 8-channel BNC / 2-channel IP surveillance DVR. It spews out AVI files with filenames like `1_01_R_20240218080000AM.avi` and `4_01_R_20240218030000PM.avi`.
+
+This bash script does the following when run within a folder containing these video dumps:
+
+- Correct the pixel aspect ratio. 960x1080 now displays as 1920x1080.
+- Normalize audio for channels 1-4 (BNC) and 9-10 (IP Camera).
+- Output to DaVinci Resolve Studio compatible H.265 MP4 files.
+- Create a new filename that looks more like `CAM01 - 2024-02-18 08_00_00 [AV].mp4` where [AV] means the video contains both audio and video streams. For cameras 5-8, [V] designates only video is included.
