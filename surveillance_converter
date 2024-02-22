@@ -10,9 +10,6 @@ failed=""
 for f in *.${ext};
 do
 
-# Works, but is slow
-#  ffmpeg -i "$f" -aspect 16:9 -c:v libx265 -c:a aac -x265-params crf=27 -preset veryfast -max_muxing_queue_size 9999 output/"${f%.${ext}}".mp4;
-
   parsed_filename="${f#*_}"
   filename="${parsed_filename%.*}"
   camera=$(echo "$filename" | awk -F'_' '{print $1}')
@@ -65,8 +62,6 @@ do
 
   echo ""
 
-#  ffmpeg -i "$f" -aspect 16:9 -c:v copy -c:a copy -x265-params crf=10 output/"${f%.mp4}".mp4;
-#  ffmpeg -i "$f" -aspect 16:9 -c:v libx265 -c:a aac -x265-params crf=27 -preset veryfast output/"${f%.mp4}".mp4;
 done
 
 echo ""
