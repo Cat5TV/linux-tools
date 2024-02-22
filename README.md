@@ -1,5 +1,6 @@
 # linux-tools
-Miscellaneous Linux Scripts
+
+Hi, I'm [Robbie Ferguson](https://category5.tv/about-us/)! This is where I poop out random Linux scripts that I create and figure someone like you might benefit from them. I hope something here is useful for you!
 
 ## change-hostname
 
