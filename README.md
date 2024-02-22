@@ -65,3 +65,6 @@ Usage: `./resize-to-size SIZE_IN_MB FILENAME`
 
 Example: `./resize-to-size 2 sample.jpg` Will scale and compress sample.jpg to 2 MB
 
+## surveillance_converter
+
+A bash script I wrote to take AVI files from our surveillance DVR, fix the pixel aspect ratio (2:1) to create 16:9 H.265 A/V files quickly, ready for viewing or pulling into DaVinci Resolve.
