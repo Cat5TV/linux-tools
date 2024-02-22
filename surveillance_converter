@@ -1,0 +1,69 @@
+#!/bin/bash
+ext=avi
+
+if [[ ! -d output ]]; then
+  mkdir output
+fi
+
+failed=""
+
+for f in *.${ext};
+do
+
+  parsed_filename="${f#*_}"
+  filename="${parsed_filename%.*}"
+  camera=$(echo "$filename" | awk -F'_' '{print $1}')
+  camera_int=$((camera))
+
+  # Split the input string based on the final "_" character
+  date_time=$(echo "$filename" | awk -F'_' '{print $NF}')
+
+  # Extract date and time components
+  date_string="${date_time:0:8}"
+  formatted_date=$(date -d "${date_string}" '+%Y-%m-%d')
+  time_string="${date_time:8:2}:${date_time:10:2}:${date_time:12:2} ${date_time:14:2}"
+
+  # Convert time to 24-hour format
+  time_24=$(date -d "$time_string" '+%H_%M_%S')
+
+  # Create the final filename
+  final_filename="CAM${camera} - ${formatted_date} ${time_24}"
+
+  # ANSI color codes
+  GREEN='\033[0;32m'
+  RED='\033[0;31m'
+  NC='\033[0m' # No Color
+
+  echo ""
+
+  if [ "$camera_int" -ge 5 ]; then
+    # Cameras >= 5 do not have audio, so don't try to encode audio
+    encode_type="Video"
+    tag="[V]"
+    audio_option="-an"
+  else
+    # This is camera 1-4, which has audio, so include it in the encode
+    encode_type="Video + Audio"
+    tag="[AV]"
+    audio_option="-c:a aac"
+  fi
+
+  echo -e "${GREEN}Encoding Camera $camera_int $formatted_date $time_string $encode_type: ${NC}$final_filename"
+  echo ""
+
+  if ! ffmpeg -y -i "$f" -aspect 16:9 -c:v copy $audio_option -max_muxing_queue_size 1024 "output/${final_filename} ${tag}.mp4"; then
+    echo ""
+    echo -e "${RED}********"
+    echo "FAILURE: $f"
+    echo "********${NC}"
+    echo ""
+    failed="${failed}"$'\n'"${f}"
+  fi
+
+  echo ""
+
+done
+
+echo ""
+echo "List of failed files:"
+echo $failed
