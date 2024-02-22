@@ -71,7 +71,7 @@ Our DVR is a JOOAN JA-4208(X) 8-channel BNC surveillance DVR. It spews out AVI f
 
 This bash script does the following when run within a folder containing these video dumps:
 
-- Correct the pixel aspect ratio. 960x1080 now displays as 1920x1080.
+- Correct the pixel aspect ratio to 2:1. 960x1080 now displays as 1920x1080.
 - Normalize audio for channels 1-4.
 - Output to DaVinci Resolve Studio compatible H.265 MP4 files.
 - Create a new filename that looks more like `CAM01 - 2024-02-18 08_00_00 [AV].mp4` where `[AV]` specifies that the resulting file contains both audio and video streams. For cameras 5-8, `[V]` designates only video is included.
