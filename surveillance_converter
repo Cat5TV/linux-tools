@@ -10,6 +10,9 @@ failed=""
 for f in *.${ext};
 do
 
+# Works, but is slow
+#  ffmpeg -i "$f" -aspect 16:9 -c:v libx265 -c:a aac -x265-params crf=27 -preset veryfast -max_muxing_queue_size 9999 output/"${f%.${ext}}".mp4;
+
   parsed_filename="${f#*_}"
   filename="${parsed_filename%.*}"
   camera=$(echo "$filename" | awk -F'_' '{print $1}')
@@ -45,7 +48,7 @@ do
     # This is camera 1-4, which has audio, so include it in the encode
     encode_type="Video + Audio"
     tag="[AV]"
-    audio_option="-c:a aac"
+    audio_option="-c:a aac -filter:a dynaudnorm=p=0.9:s=5"
   fi
 
   echo -e "${GREEN}Encoding Camera $camera_int $formatted_date $time_string $encode_type: ${NC}$final_filename"
@@ -62,6 +65,8 @@ do
 
   echo ""
 
+#  ffmpeg -i "$f" -aspect 16:9 -c:v copy -c:a copy -x265-params crf=10 output/"${f%.mp4}".mp4;
+#  ffmpeg -i "$f" -aspect 16:9 -c:v libx265 -c:a aac -x265-params crf=27 -preset veryfast output/"${f%.mp4}".mp4;
 done
 
 echo ""
