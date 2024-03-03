@@ -48,7 +48,7 @@ do
 
   echo ""
 
-  if [ "$camera_int" -ge 5 ]; then
+  if [[ "$camera_int" -ge 5 && "$camera_int" -le 8 ]]; then
     # Cameras >= 5 do not have audio, so don't try to encode audio
     encode_type="Video"
     tag="[V]"
