@@ -7,8 +7,20 @@ fi
 
 failed=""
 
+# ANSI color codes
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+
 for f in *.${ext};
 do
+
+  # Check file size
+  file_size=$(stat -c %s "$f")
+  if (( file_size < 2048 )); then
+    echo "${RED}Skipping $f: File size is less than 2KB${NC}"
+    continue
+  fi
 
   parsed_filename="${f#*_}"
   filename="${parsed_filename%.*}"
@@ -29,11 +41,6 @@ do
 
   # Create the final filename
   final_filename="CAM${camera} - ${formatted_date} ${time_24}"
-
-  # ANSI color codes
-  GREEN='\033[0;32m'
-  RED='\033[0;31m'
-  NC='\033[0m' # No Color
 
   echo ""
 
