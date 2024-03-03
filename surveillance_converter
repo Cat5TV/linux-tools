@@ -12,7 +12,11 @@ GREEN='\033[0;32m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-for f in *.${ext};
+# Find all files with the specified extension, print modification time and filename,
+# sort them based on modification time in ascending order
+files=$(find . -maxdepth 1 -type f -name "*.${ext}" -printf "%T@ %p\n" | sort -n | cut -d' ' -f2-)
+
+for f in $files;
 do
 
   # Check file size
