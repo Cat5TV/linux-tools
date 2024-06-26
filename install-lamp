@@ -1,7 +1,7 @@
 #!/bin/bash
 echo "Installing LAMP stack..."
 
-# Change hostname on Debian-based Linux distros
+# Install a LAMP Stack on a Debian server
 # By Robbie Ferguson // baldnerd.com
 
 if [[ $EUID -ne 0 ]]; then
@@ -13,14 +13,22 @@ fi
 sudo apt update > /dev/null 2>&1
 
 # Install the LAMP base
-yes | sudo apt install apache2 php7.3 php7.3-cli php7.3-common php7.3-curl php7.3-gd php7.3-json php7.3-mbstring php7.3-mysql php7.3-opcache php7.3-phpdbg php7.3-readline php7.3-sqlite3 php7.3-xml libapache2-mod-php7.3 libargon2-1 libsodium23 php-curl php-rrd mariadb-server libapache2-mod-security2 modsecurity-crs
+yes | sudo apt install apache2 php php-cli php-common php-curl php-gd php-json php-mbstring php-mysql php-opcache php-phpdbg php-readline php-sqlite3 php-xml libapache2-mod-php libargon2-1 libsodium23 php-curl php-rrd mariadb-server libapache2-mod-security2 modsecurity-crs
+
+# Install CSF/LFD Firewall
+cd /usr/src
+wget -O /tmp/csf.tgz https://download.configserver.com/csf.tgz
+tar -xzf /tmp/csf.tgz
+cd csf
+sh install.sh
+# Load base configuration from NEMS Linux to open common ports and ignore local IP addresses
+wget -O /etc/csf/csf.conf https://github.com/NEMSLinux/nems-migrator-data/raw/main/debpack/root/nems/nems-migrator/data/csf/csf.conf
+wget -O /etc/csf/csf.ignore https://github.com/NEMSLinux/nems-migrator-data/raw/main/debpack/root/nems/nems-migrator/data/csf/csf.ignore
+# Enable and Re/start CSF
+csf -e
+csf -R
 
 # Add a root password to MySQL
 sudo mysql_secure_installation
-
-# Enable PHP 7.3 (No need, gets activated automatically with MPM)
-#sudo a2dismod mpm_event
-#sudo a2enmod php7.3
-#systemctl restart apache2
 
 echo "Done."
