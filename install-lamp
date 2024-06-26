@@ -16,6 +16,7 @@ sudo apt update > /dev/null 2>&1
 yes | sudo apt install apache2 php php-cli php-common php-curl php-gd php-json php-mbstring php-mysql php-opcache php-phpdbg php-readline php-sqlite3 php-xml libapache2-mod-php libargon2-1 libsodium23 php-curl php-rrd mariadb-server libapache2-mod-security2 modsecurity-crs
 
 # Install CSF/LFD Firewall
+yes | sudo apt install iptables
 cd /usr/src
 wget -O /tmp/csf.tgz https://download.configserver.com/csf.tgz
 tar -xzf /tmp/csf.tgz
