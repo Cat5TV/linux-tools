@@ -28,7 +28,7 @@ if [[ $version == '' ]] || [[ $command == 'install' ]]; then
   else
     printf "Installing youtube-dl..."
   fi
-  wget https://yt-dl.org/downloads/latest/youtube-dl -q -O /usr/local/bin/youtube-dl
+  wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_linux -q -O /usr/local/bin/youtube-dl
   chmod a+rx /usr/local/bin/youtube-dl
   version=$(/usr/local/bin/youtube-dl --version)
   echo "Done. Version $version installed."
