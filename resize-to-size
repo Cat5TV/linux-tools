@@ -5,35 +5,36 @@
 # imagemagick (Will auto-install on Debian/RHEL if missing)
 
 targetsize=$1
-file=$2
-strip_args=""
+shift # Remove the size argument so we can process the rest
 
-# Optional 3rd argument to strip EXIF data
-if [[ "$3" == "--strip" ]]; then
-  strip_args="-strip"
-fi
+strip_args=""
+files=()
+
+# Parse remaining arguments for the strip flag and filenames
+for arg in "$@"; do
+  if [[ "$arg" == "--strip" ]]; then
+    strip_args="-strip"
+  else
+    files+=("$arg")
+  fi
+done
 
 echo ""
-echo "Resize to Size v2.0 by Robbie Ferguson"
+echo "Resize to Size v2.1 by Robbie Ferguson"
 echo ""
 echo "This tool scales and compresses an image to a target filesize,"
 echo "creating the best size/quality image possible within that limitation."
 echo ""
 
-if [[ $targetsize == '' ]] || [[ $file == '' ]]; then
-  echo "Usage:   $0 SIZE_IN_MB FILENAME [--strip]"
+if [[ $targetsize == '' ]] || [[ ${#files[@]} -eq 0 ]]; then
+  echo "Usage:   $0 SIZE_IN_MB FILENAME [FILENAME 2...] [--strip]"
   echo ""
   echo "Example: $0 2 sample.jpg"
-  echo "Will scale and compress sample.jpg to 2 MB"
+  echo "         $0 2 *.jpg"
+  echo "Will scale and compress the image(s) to 2 MB"
   echo ""
   echo "Add --strip to remove EXIF data for maximum compression"
   echo "(Warning: do not use --strip on equirectangular projections)"
-  echo ""
-  exit
-fi
-
-if [[ ! -e $file ]]; then
-  echo "$file does not exist."
   echo ""
   exit
 fi
@@ -53,65 +54,80 @@ if ! command -v convert &> /dev/null; then
   fi
 fi
 
-save () {
-  echo ""
-  echo "File saved to $destfile"
-  echo ""
-}
+# Convert MB to bytes
+target_bytes=$(( targetsize * 1000000 ))
+extent_target=$(( target_bytes - 10000 ))
 
-targetsize=$(( $targetsize * 1000000 ))
-extent_target=$(( targetsize - 10000 ))
-destfile="${file%.*}_resized.jpg"
-sourcesize=$(wc -c < "$file")
-
-if (( $targetsize > $sourcesize )); then
-  echo "$file is $(( $sourcesize / 1000000 )) MB. Not resizing to $(( $targetsize / 1000000 )) MB."
-  echo ""
-  exit
-fi
-
-# First attempt: try to decrease quality incrementally without re-scaling
-printf "Attempting optimal compression..."
-convert "$file" $strip_args -sampling-factor 4:2:0 -define jpeg:extent=${extent_target}b "$destfile"
-filesize=$(wc -c < "$destfile")
-
-if (( filesize <= targetsize && filesize > 0 )); then
-  echo " Done."
-  echo ""
-  echo "Achieved target size using optimal compression."
-  save
-  exit
-fi
-
-# Second attempt: we'll slowly resize the image while testing high quality settings
-printf " Failed."
-echo ""
-printf "Gradually reducing the scale of the image while adjusting compression..."
-scale=95 # Starting percentage of scale
-until [ $filesize -lt $targetsize ]
-do
-  convert "$file" -resize ${scale}% $strip_args -sampling-factor 4:2:0 -define jpeg:extent=${extent_target}b "$destfile"
-  filesize=$(wc -c < "$destfile")
+# Loop through all provided files
+for file in "${files[@]}"; do
   
-  if (( scale < 10 )); then
-    echo " Failed."
-    break
+  if [[ ! -e "$file" ]]; then
+    echo "Skipping: $file does not exist."
+    echo ""
+    continue
   fi
-  scale=$(( $scale-5 ))
-  printf "."
+
+  echo "------------------------------------------------------"
+  echo "Processing: $file"
+  echo "------------------------------------------------------"
+  
+  destfile="${file%.*}_resized.jpg"
+  sourcesize=$(wc -c < "$file")
+
+  if (( target_bytes > sourcesize )); then
+    echo "$file is $(( sourcesize / 1000000 )) MB. Not resizing to $(( target_bytes / 1000000 )) MB."
+    echo ""
+    continue
+  fi
+
+  # First attempt: try to decrease quality incrementally without re-scaling
+  printf "Attempting optimal compression..."
+  convert "$file" $strip_args -sampling-factor 4:2:0 -define jpeg:extent=${extent_target}b "$destfile"
+  filesize=$(wc -c < "$destfile")
+
+  if (( filesize <= target_bytes && filesize > 0 )); then
+    echo " Done."
+    echo ""
+    echo "Achieved target size using optimal compression."
+    echo ""
+    echo "File saved to $destfile"
+    echo ""
+    continue
+  fi
+
+  # Second attempt: we'll slowly resize the image while testing high quality settings
+  printf " Failed."
+  echo ""
+  printf "Gradually reducing the scale of the image while adjusting compression..."
+  scale=95 # Starting percentage of scale
+  until [ $filesize -lt $target_bytes ]
+  do
+    convert "$file" -resize ${scale}% $strip_args -sampling-factor 4:2:0 -define jpeg:extent=${extent_target}b "$destfile"
+    filesize=$(wc -c < "$destfile")
+    
+    if (( scale < 10 )); then
+      echo " Failed."
+      break
+    fi
+    scale=$(( scale-5 ))
+    printf "."
+  done
+
+  if (( filesize < target_bytes && filesize > 0 )); then
+    # Adjust scale variable for output accuracy since the loop subtracts after successful conversion
+    scale=$(( scale + 5 ))
+    echo ""
+    echo ""
+    echo "Achieved target size by scaling the image to ${scale}% of its original size and setting optimal compression."
+    echo ""
+    echo "File saved to $destfile"
+    echo ""
+    continue
+  fi
+
+  echo ""
+  echo "Sorry, I couldn't get $file down to that size."
+  echo ""
+  rm -f "$destfile"
+
 done
-
-if (( $filesize < $targetsize && $filesize > 0 )); then
-  # Adjust scale variable for output accuracy since the loop subtracts after successful conversion
-  scale=$(( scale + 5 ))
-  echo ""
-  echo ""
-  echo "Achieved target size by scaling the image to ${scale}% of its original size and setting optimal compression."
-  save
-  exit
-fi
-
-echo ""
-echo "Sorry, I couldn't get your file down to that size."
-echo ""
-rm -f "$destfile"
