@@ -62,9 +62,11 @@ Stage 2: Gradually reduce the image scale while also adjusting compression to tr
 
 Stage 3: Get aggressive and allow much higher compression.
 
-Usage: `./resize-to-size SIZE_IN_MB FILENAME`
+Usage: `./resize-to-size SIZE_IN_MB FILENAME [--strip]`
 
 Example: `./resize-to-size 2 sample.jpg` Will scale and compress sample.jpg to 2 MB
+
+Including `--strip` as the third argument will strip EXIF tags, further improving the quality while reducing filesize. I made this optional to avoid stripping needed tags from 360 images.
 
 ## surveillance_converter
 
